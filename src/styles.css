@@ -1,0 +1,496 @@
+body {
+    margin: 0;
+    --accent: #a36be8;
+    --bg-translucent: rgba(32, 32, 32, 0.85);
+    /* Acrylic-like base */
+    padding: 0;
+    background: rgba(0, 0, 0, 0);
+    /* Transparent for Electron */
+    color: #fff;
+    font-family: 'Segoe UI', sans-serif;
+    overflow: hidden;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+/* Hide Scrollbar */
+::-webkit-scrollbar {
+    display: none;
+}
+
+/* Fluent Provider Full Height */
+fluent-design-system-provider {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    background-color: #1a1a1a;
+    /* Solid Opaque Dark */
+    border-radius: 8px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* Custom Title Bar */
+.titlebar {
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding-left: 12px;
+    background: #1a1a1a;
+    -webkit-app-region: drag;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.title {
+    font-weight: 600;
+    font-size: 12px;
+    letter-spacing: 0.5px;
+    opacity: 0.8;
+}
+
+.win-controls {
+    -webkit-app-region: no-drag;
+    display: flex;
+    height: 100%;
+}
+
+.win-btn-native {
+    width: 46px;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    cursor: pointer;
+    transition: 0.1s;
+    color: #ccc;
+}
+
+.win-btn-native:hover {
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.win-btn-native.close:hover {
+    background: #e81123;
+    color: white;
+}
+
+/* Content Area */
+.content {
+    flex: 1;
+    padding: 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+    overflow-y: auto;
+    background: #1a1a1a;
+}
+
+/* Form Layouts */
+.section {
+    width: 100%;
+    max-width: 650px;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.section .label {
+    color: rgba(255, 255, 255, 0.95);
+    font-weight: 600;
+}
+
+.label {
+    font-size: 12px;
+    font-weight: 600;
+    color: rgba(255, 255, 255, 0.9);
+    margin-bottom: 8px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.row-controls {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: rgba(255, 255, 255, 0.05);
+    padding: 12px 16px;
+    border-radius: 4px;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.row-controls span {
+    font-size: 14px;
+    color: rgba(255, 255, 255, 0.9);
+    font-weight: 400;
+}
+
+/* Fluent Overrides/Helpers */
+fluent-button {
+    width: 100%;
+}
+
+fluent-slider {
+    width: 100%;
+    margin-bottom: 8px;
+}
+
+fluent-card {
+    max-width: 650px;
+    width: 100%;
+}
+
+/* Fluent 2 Select Styling */
+fluent-select {
+    --neutral-foreground-rest: rgba(255, 255, 255, 0.9);
+    --neutral-foreground-hover: rgba(255, 255, 255, 1);
+    --neutral-stroke-rest: rgba(255, 255, 255, 0.2);
+    --neutral-stroke-hover: rgba(255, 255, 255, 0.35);
+    --accent-fill-rest: #a36be8;
+    --accent-stroke-control-active: #a36be8;
+    font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, 'Roboto', sans-serif;
+}
+
+fluent-select::part(control) {
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 6px;
+    color: rgba(255, 255, 255, 0.95);
+    font-size: 14px;
+    font-weight: 400;
+    padding: 8px 32px 8px 12px;
+    min-height: 36px;
+    min-width: 160px;
+    transition: all 0.15s cubic-bezier(0.4, 0.0, 0.2, 1);
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+    cursor: pointer;
+}
+
+fluent-select:hover::part(control) {
+    background: rgba(255, 255, 255, 0.12);
+    border-color: rgba(255, 255, 255, 0.3);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
+}
+
+fluent-select::part(control):focus {
+    outline: none;
+    border-color: #a36be8;
+    box-shadow: 0 0 0 2px rgba(163, 107, 232, 0.2);
+}
+
+fluent-select[open]::part(control) {
+    border-color: #a36be8;
+    box-shadow: 0 0 0 2px rgba(163, 107, 232, 0.2);
+}
+
+/* Dropdown List Container */
+fluent-select::part(listbox) {
+    background: rgba(26, 26, 26, 0.98);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 6px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4), 0 0 1px rgba(0, 0, 0, 0.3);
+    padding: 4px;
+    margin-top: 4px;
+    backdrop-filter: blur(20px);
+}
+
+/* Dropdown Options */
+fluent-option {
+    color: rgba(255, 255, 255, 0.9);
+    background: transparent;
+    padding: 8px 12px;
+    border-radius: 4px;
+    font-size: 14px;
+    font-weight: 400;
+    margin: 2px 0;
+    cursor: pointer;
+    transition: all 0.1s cubic-bezier(0.4, 0.0, 0.2, 1);
+}
+
+fluent-option:hover {
+    background: rgba(255, 255, 255, 0.1);
+    color: rgba(255, 255, 255, 1);
+}
+
+fluent-option[selected] {
+    background: rgba(163, 107, 232, 0.15);
+    color: rgba(255, 255, 255, 1);
+    font-weight: 500;
+}
+
+fluent-option[selected]:hover {
+    background: rgba(163, 107, 232, 0.25);
+}
+
+/* Dropdown Indicator (Chevron) */
+fluent-select::part(indicator) {
+    color: rgba(255, 255, 255, 0.7);
+    transition: transform 0.15s cubic-bezier(0.4, 0.0, 0.2, 1);
+}
+
+fluent-select[open]::part(indicator) {
+    transform: rotate(180deg);
+    color: rgba(255, 255, 255, 0.9);
+}
+
+/* Hue Slider */
+.hue-slider {
+    -webkit-appearance: none;
+    width: 100%;
+    height: 12px;
+    border-radius: 6px;
+    background: linear-gradient(to right, #ff0000, #ffff00, #00ff00, #00ffff, #0000ff, #ff00ff, #ff0000);
+    outline: none;
+    cursor: pointer;
+    margin: 0;
+}
+
+.hue-slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: #ffffff;
+    border: 2px solid rgba(0, 0, 0, 0.1);
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.4);
+    transition: transform 0.1s;
+}
+
+.hue-slider::-webkit-slider-thumb:hover {
+    transform: scale(1.2);
+}
+
+/* Grid for Animation Buttons */
+.anim-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+}
+
+.anim-grid fluent-button::part(control) {
+    background: #2d2d2d;
+    border: 1px solid #444;
+    color: #ddd;
+}
+
+.anim-grid fluent-button:hover::part(control) {
+    background: #3d3d3d;
+    border-color: #a36be8;
+    color: white;
+}
+
+/* Tab Styling */
+fluent-tabs {
+    --accent-fill-rest: #a36be8;
+    --neutral-foreground-rest: #b0b0b0;
+    --neutral-foreground-hover: #ffffff;
+    --neutral-foreground-active: #ffffff;
+    width: 100%;
+    height: 100%;
+}
+
+fluent-tabs::part(tabstrip) {
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    margin-bottom: 16px;
+    padding: 0 12px;
+}
+
+fluent-tab {
+    font-size: 13px;
+    letter-spacing: 0.5px;
+    padding: 8px 12px;
+    color: #b0b0b0;
+    cursor: pointer;
+}
+
+fluent-tab:hover {
+    color: #ffffff;
+}
+
+fluent-tab[aria-selected="true"] {
+    color: #ffffff;
+    font-weight: 600;
+}
+
+/* Status Card */
+.status-card {
+    width: 100%;
+    padding: 16px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    transition: all 0.3s ease;
+}
+
+.status-icon {
+    font-size: 24px;
+    opacity: 0.8;
+}
+
+.status-info {
+    display: flex;
+    flex-direction: column;
+}
+
+.status-title {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: rgba(255, 255, 255, 0.5);
+    margin-bottom: 2px;
+}
+
+.status-detail {
+    font-size: 16px;
+    font-weight: 600;
+    color: #fff;
+}
+
+/* Status Variants */
+.status-card.connecting {
+    border-left: 3px solid #ffaa00;
+}
+
+.status-card.initializing {
+    border-left: 3px solid #a36be8;
+}
+
+.status-card.ready {
+    border-left: 3px solid #00cc66;
+    background: rgba(0, 204, 102, 0.05);
+}
+
+.status-card.initializing .status-detail {
+    color: #a36be8;
+}
+
+.status-card.ready .status-detail {
+    color: #00cc66;
+}
+
+/* Dashbord Grid */
+.dashboard-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin-bottom: 24px;
+    width: 100%;
+}
+
+.stat-card {
+    padding: 20px 16px;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 4px;
+    text-align: center;
+}
+
+.stat-value {
+    font-size: 28px;
+    font-weight: 300;
+    color: var(--accent);
+    margin-bottom: 4px;
+}
+
+.stat-label {
+    font-size: 11px;
+    color: rgba(255, 255, 255, 0.8);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-top: 4px;
+}
+
+/* Action Cards */
+.action-card {
+    padding: 8px 16px;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 4px;
+}
+
+.action-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 0;
+}
+
+.action-row span {
+    font-size: 14px;
+    font-weight: 400;
+    color: rgba(255, 255, 255, 0.9);
+    letter-spacing: 0.2px;
+}
+
+.separator {
+    height: 1px;
+    background: rgba(255, 255, 255, 0.1);
+    margin: 8px 0;
+}
+
+/* Timer */
+.timer-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    padding-top: 40px;
+}
+
+.timer-display {
+    font-size: 80px;
+    font-weight: 200;
+    color: #fff;
+    font-feature-settings: "tnum";
+    line-height: 1;
+}
+
+.timer-label {
+    font-size: 14px;
+    color: var(--accent);
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    margin-bottom: 32px;
+}
+
+.timer-controls {
+    display: flex;
+    gap: 16px;
+    margin-bottom: 32px;
+}
+
+.timer-presets {
+    display: flex;
+    gap: 8px;
+}
+
+.preset-btn {
+    opacity: 0.7;
+}
+
+.preset-btn.active {
+    opacity: 1;
+    background: rgba(255, 255, 255, 0.1);
+}
+
+/* Fix visibility logic */
+fluent-tab-panel {
+    width: 100%;
+    max-width: 100%;
+    padding: 0;
+}
+
+fluent-tab-panel[hidden] {
+    display: none !important;
+}
+
+fluent-tab-panel:not([hidden]) {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}

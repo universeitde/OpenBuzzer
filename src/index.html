@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OpenBuzzer</title>
+    <link rel="stylesheet" href="styles.css">
+    <script type="module" src="../node_modules/@fluentui/web-components/dist/web-components.js"></script>
+</head>
+<body>
+    <fluent-design-system-provider no-paint="true" mode="dark" accent-base-color="#a36be8">
+        <div class="titlebar">
+            <div class="title">OPENBUZZER</div>
+            <div class="win-controls">
+                <!-- Mac-like dots replaced by Windows-like icons (simulated with text/css for now or simple shapes) -->
+                <!-- Ideally use SVG, but for speed, styled div is fine if it looks native -->
+                <div class="win-btn-native minimize" onclick="window.api.minimize()">—</div>
+                <div class="win-btn-native close" onclick="window.api.close()">✕</div>
+            </div>
+        </div>
+
+        <div class="content">
+            <fluent-tabs orientation="horizontal" activeid="tab-dashboard" style="height:100%;">
+                <fluent-tab id="tab-dashboard" aria-controls="panel-dashboard">Dashboard</fluent-tab>
+                <fluent-tab id="tab-lighting" aria-controls="panel-lighting">Lighting</fluent-tab>
+                <fluent-tab id="tab-actions" aria-controls="panel-actions">Actions</fluent-tab>
+                <fluent-tab id="tab-timer" aria-controls="panel-timer">Timer</fluent-tab>
+
+                <!-- TAB 1: DASHBOARD -->
+                <fluent-tab-panel id="panel-dashboard" style="padding-top:16px;">
+                    <!-- SYSTEM STATUS -->
+                    <div class="dashboard-grid">
+                        <fluent-card class="stat-card">
+                            <div class="stat-value">Ready</div>
+                            <div class="stat-label">System Status</div>
+                        </fluent-card>
+                        <fluent-card class="stat-card">
+                            <div class="stat-value">0</div>
+                            <div class="stat-label">Daily Clicks</div>
+                        </fluent-card>
+                    </div>
+
+                    <!-- QUICK TOGGLES -->
+                    <div class="section">
+                        <div class="label">Quick Controls</div>
+                        <div class="row-controls">
+                            <span>Interactive LED</span>
+                            <fluent-switch id="chkLed" checked onchange="updateConfig()"></fluent-switch>
+                        </div>
+                        <div class="row-controls">
+                            <span>Media Mode</span>
+                            <fluent-switch id="chkMedia" onchange="updateConfig()"></fluent-switch>
+                        </div>
+                        <div class="row-controls">
+                            <span>Start with Windows</span>
+                            <fluent-switch id="chkAutostart" onchange="toggleAutostart(this.checked)"></fluent-switch>
+                        </div>
+                    </div>
+                </fluent-tab-panel>
+
+                <!-- TAB 2: LIGHTING -->
+                <fluent-tab-panel id="panel-lighting" style="padding-top:16px;">
+                    <!-- GLOBAL SETTINGS -->
+                    <div class="section" style="margin-bottom:20px;">
+                        <div class="label">Global Settings</div>
+                        <div class="row-controls" style="margin-bottom:8px;">
+                            <span style="font-size:12px; opacity:0.7;">Brightness</span>
+                            <fluent-slider min="0" max="100" value="100" style="width:150px;" id="sliderBrightness" onchange="updateBrightness(this.value)"></fluent-slider>
+                        </div>
+                        <div class="row-controls">
+                            <span style="font-size:12px; opacity:0.7;">Animation Speed</span>
+                            <fluent-slider min="10" max="400" value="100" style="width:150px;" id="sliderSpeed" onchange="updateSpeed(this.value)"></fluent-slider>
+                        </div>
+                    </div>
+
+                    <!-- ANIMATIONS -->
+                    <div class="section">
+                        <div class="label">Animations</div>
+                        <div class="anim-grid" id="animGrid">
+                            <!-- Dynamic -->
+                        </div>
+                        <fluent-button appearance="accent" style="width:100%; margin-top:10px;" onclick="window.api.enableAutoLed(); document.getElementById('chkLed').checked=true; updateConfig();">Stop Animation</fluent-button>
+                    </div>
+
+                    <!-- STATIC COLOR -->
+                    <div class="section" style="margin-top:20px;">
+                        <div class="label">Static Color</div>
+                        <div style="background: rgba(255,255,255,0.03); padding: 16px; border-radius: 4px;">
+                            <!-- Fluent Presets -->
+                            <div style="display:flex; gap:12px; margin-bottom:16px;">
+                                <div class="color-swatch" style="background:#a36be8;" onclick="updateColor('#a36be8')"></div>
+                                <div class="color-swatch" style="background:#00cc66;" onclick="updateColor('#00cc66')"></div>
+                                <div class="color-swatch" style="background:#ffaa00;" onclick="updateColor('#ffaa00')"></div>
+                                <div class="color-swatch" style="background:#00aaff;" onclick="updateColor('#00aaff')"></div>
+                                <div class="color-swatch" style="background:#ff5555;" onclick="updateColor('#ff5555')"></div>
+                                <div class="color-swatch" style="background:#ffffff;" onclick="updateColor('#ffffff')"></div>
+                            </div>
+                            <!-- Integrated Hue Slider -->
+                            <div style="width:100%;">
+                                <div style="margin-bottom:8px; font-size:12px; color:#aaa; display:flex; justify-content:space-between;">
+                                    <span>Custom Hue</span>
+                                    <span id="hueValue"></span>
+                                </div>
+                                <input type="range" min="0" max="360" value="0" class="hue-slider" id="hueSlider" oninput="updateHue(this.value)">
+                            </div>
+                        </div>
+                    </div>
+                </fluent-tab-panel>
+
+                <!-- TAB 3: ACTIONS (NEW) -->
+                <fluent-tab-panel id="panel-actions" style="padding-top:16px;">
+                    <div class="section">
+                        <div class="label">Knob Rotation</div>
+                        <fluent-card class="action-card">
+                            <div class="action-row">
+                                <span>Turn Right</span>
+                                <fluent-select style="min-width:140px;">
+                                    <fluent-option value="media_next" selected>Next Track</fluent-option>
+                                    <fluent-option value="vol_up">Volume Up</fluent-option>
+                                    <fluent-option value="scroll_down">Scroll Down</fluent-option>
+                                    <fluent-option value="zoom_in">Zoom In</fluent-option>
+                                </fluent-select>
+                            </div>
+                            <div class="separator"></div>
+                            <div class="action-row">
+                                <span>Turn Left</span>
+                                <fluent-select style="min-width:140px;">
+                                    <fluent-option value="media_prev" selected>Prev Track</fluent-option>
+                                    <fluent-option value="vol_down">Volume Down</fluent-option>
+                                    <fluent-option value="scroll_up">Scroll Up</fluent-option>
+                                    <fluent-option value="zoom_out">Zoom Out</fluent-option>
+                                </fluent-select>
+                            </div>
+                        </fluent-card>
+                    </div>
+
+                    <div class="section">
+                        <div class="label">Button Press</div>
+                        <fluent-card class="action-card">
+                            <div class="action-row">
+                                <span>Single Click</span>
+                                <fluent-select style="min-width:140px;">
+                                    <fluent-option value="media_play" selected>Play/Pause</fluent-option>
+                                    <fluent-option value="mute">Mute</fluent-option>
+                                    <fluent-option value="minimize">Minimize App</fluent-option>
+                                    <fluent-option value="screenshot">Screenshot</fluent-option>
+                                </fluent-select>
+                            </div>
+                            <div class="separator"></div>
+                            <div class="action-row">
+                                <span>Long Press</span>
+                                <fluent-select style="min-width:140px;">
+                                    <fluent-option value="none">None</fluent-option>
+                                    <fluent-option value="app_close" selected>Close App</fluent-option>
+                                    <fluent-option value="lock">Lock PC</fluent-option>
+                                </fluent-select>
+                            </div>
+                        </fluent-card>
+                    </div>
+                </fluent-tab-panel>
+
+                <!-- TAB 4: TIMER (NEW) -->
+                <fluent-tab-panel id="panel-timer" style="padding-top:16px;">
+                    <div class="timer-container">
+                        <div class="timer-display">25:00</div>
+                        <div class="timer-label">FOCUS MODE</div>
+                        
+                        <div class="timer-controls">
+                            <fluent-button appearance="accent" style="min-width:120px; height:40px;">Start Focus</fluent-button>
+                            <fluent-button appearance="outline" style="min-width:80px; height:40px;">Reset</fluent-button>
+                        </div>
+
+                        <div class="timer-presets">
+                            <fluent-button appearance="outline" class="preset-btn active">25m</fluent-button>
+                            <fluent-button appearance="outline" class="preset-btn">15m</fluent-button>
+                            <fluent-button appearance="outline" class="preset-btn">5m</fluent-button>
+                        </div>
+                    </div>
+                </fluent-tab-panel>
+            </fluent-tabs>
+        </div>
+    </fluent-design-system-provider>
+
+    <script src="renderer.js"></script>
+</body>
+</html>

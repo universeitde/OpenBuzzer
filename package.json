@@ -1,0 +1,30 @@
+{
+  "name": "openbuzzer",
+  "version": "1.0.0",
+  "description": "OpenBuzzer LED Controller",
+  "main": "src/main.js",
+  "scripts": {
+    "start": "electron src/main.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "dependencies": {
+    "@fluentui/web-components": "^2.6.1",
+    "express": "^5.2.1",
+    "jzz": "^1.9.6",
+    "node-hid": "^3.2.0",
+    "open": "^11.0.0",
+    "robotjs": "^0.6.0",
+    "serialport": "^13.0.0",
+    "usb": "^2.16.0",
+    "web-midi-api": "^2.4.0",
+    "ws": "^8.19.0"
+  },
+  "devDependencies": {
+    "@electron/rebuild": "^4.0.2",
+    "electron": "^40.0.0"
+  }
+}
