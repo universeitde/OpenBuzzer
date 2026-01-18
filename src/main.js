@@ -3,56 +3,57 @@ const path = require('path');
 const JZZ = require('jzz');
 const fs = require('fs');
 
-// --- CONFIG ---
+// Config - MIDI Channel und Device Name
 const DEVICE_NAME = "TimeBuzzer";
 const CH_INPUT = 11; // 0xB
 const CH_OUTPUT = 11; // 0xB
 
-// --- ZONES ---
+// LED Zonen - jede Zone hat ihre eigenen MIDI CCs für R, G, B
 const ZONES = [
-    { id: 0, r: 70, g: 71, b: 72 }, // Zone 1 (Left)
-    { id: 1, r: 73, g: 74, b: 75 }, // Zone 2 (Center/Front)
-    { id: 2, r: 76, g: 77, b: 78 }  // Zone 3 (Right)
+    { id: 0, r: 70, g: 71, b: 72 }, // Zone 1 (Links)
+    { id: 1, r: 73, g: 74, b: 75 }, // Zone 2 (Mitte/Vorne)
+    { id: 2, r: 76, g: 77, b: 78 }  // Zone 3 (Rechts)
 ];
 
-// State
+// Globale State-Variablen
 let mainWindow;
 let midiOut = null;
 let lastKnobVal = -1;
 let isTouched = false;
-let lastTouchState = false; // Track state changes to prevent flicker
+let lastTouchState = false; // State-Änderungen tracken, damit wir kein Flickern bekommen
 const CONFIG_PATH = path.join(app.getPath('userData'), 'config.json');
 
 let config = {
-    ledEnabled: false, // Default OFF
+    ledEnabled: false, // Standard: AUS
     mediaEnabled: false,
     brightness: 100, // 0-100
-    globalSpeed: 100 // 10-200 (Percent of base speed)
+    globalSpeed: 100 // 10-200 (Prozent der Basis-Geschwindigkeit)
 };
 
-// Load Config
+// Config laden beim Start
 try {
     if (fs.existsSync(CONFIG_PATH)) {
         const data = fs.readFileSync(CONFIG_PATH);
         config = { ...config, ...JSON.parse(data) };
-        console.log("Config loaded:", config);
+        console.log("Config geladen:", config);
     }
 } catch (e) {
-    console.error("Failed to load config:", e);
+    console.error("Fehler beim Laden der Config:", e);
 }
 
 function saveConfig() {
     try {
         fs.writeFileSync(CONFIG_PATH, JSON.stringify(config, null, 2));
     } catch (e) {
-        console.error("Failed to save config:", e);
+        console.error("Fehler beim Speichern der Config:", e);
     }
 }
 
 let currentAnimInterval = null;
 
-// --- LED HELPERS ---
+// LED Helper-Funktionen
 function clamp(val) {
+    // MIDI-Werte müssen zwischen 0 und 127 sein
     return Math.max(0, Math.min(127, Math.round(val)));
 }
 
@@ -60,7 +61,7 @@ function setZone(zoneIdx, r, g, b) {
     if (!midiOut) return;
     const z = ZONES[zoneIdx];
 
-    // Apply Brightness
+    // Helligkeit anwenden
     const brightnessFactor = config.brightness / 100;
     const finalR = clamp(r * brightnessFactor);
     const finalG = clamp(g * brightnessFactor);
@@ -73,39 +74,40 @@ function setZone(zoneIdx, r, g, b) {
 
 function setRGB(r, g, b) {
     if (!midiOut) return;
-    // Set all zones
+    // Alle Zonen auf die gleiche Farbe setzen
     ZONES.forEach((z, idx) => setZone(idx, r, g, b));
 }
 
-// --- INTERACTIVE ANIMATIONS ---
+// Interaktive Animationen - werden bei Touch/Knob/Click getriggert
 let interactionInterval = null;
 
 function lerp(start, end, t) {
+    // Lineare Interpolation zwischen zwei Werten
     return start + (end - start) * t;
 }
 
 function triggerInteraction(type) {
         if (!config.ledEnabled) return;
-        stopAnimation(); // Stop any background loop
+        stopAnimation(); // Aktive Animation stoppen
         if (interactionInterval) clearInterval(interactionInterval);
 
         let frame = 0;
-        // Apply speed to interaction too
+        // Geschwindigkeit auch auf Interaktionen anwenden
         const speedFactor = (config.globalSpeed || 100) / 100;
         const interval = 25 / speedFactor;
 
         if (type === 'right') {
-            // SMOOTH WIPE Left -> Right
+            // Smooth Wipe von Links nach Rechts
             interactionInterval = setInterval(() => {
                 frame++;
-                const pos = frame * 0.4; // Slower progression for smoothness
+                const pos = frame * 0.4; // Langsamere Progression für smoothness
 
-                // Wider gradients (35 instead of 75) for soft "cloud" wipe
+                // Breitere Gradienten für weichen "Cloud"-Effekt
                 const z1 = clamp(127 - Math.abs(pos - 1) * 35);
                 const z2 = clamp(127 - Math.abs(pos - 3) * 35);
                 const z3 = clamp(127 - Math.abs(pos - 5) * 35);
 
-                setZone(0, z1, clamp(z1 * 0.3), 0); // Soft Orange
+                setZone(0, z1, clamp(z1 * 0.3), 0); // Sanftes Orange
                 setZone(1, z2, clamp(z2 * 0.3), 0);
                 setZone(2, z3, clamp(z3 * 0.3), 0);
 
@@ -113,7 +115,7 @@ function triggerInteraction(type) {
             }, interval);
         }
         else if (type === 'left') {
-            // SMOOTH WIPE Right -> Left
+            // Smooth Wipe von Rechts nach Links
             interactionInterval = setInterval(() => {
                 frame++;
                 const pos = frame * 0.4;
@@ -122,7 +124,7 @@ function triggerInteraction(type) {
                 const z2 = clamp(127 - Math.abs(pos - 3) * 35);
                 const z1 = clamp(127 - Math.abs(pos - 5) * 35);
 
-                setZone(2, 0, z3, z3); // Soft Cyan
+                setZone(2, 0, z3, z3); // Sanftes Cyan
                 setZone(1, 0, z2, z2);
                 setZone(0, 0, z1, z1);
 
@@ -130,10 +132,10 @@ function triggerInteraction(type) {
             }, interval);
         }
         else if (type === 'touch') {
-            // Faster Fade In Purple + Subtle Pulse
+            // Schneller Fade-In in Lila + subtiler Pulse
             interactionInterval = setInterval(() => {
                 frame++;
-                const t = Math.min(1, frame / (8 / speedFactor)); // Faster: 8 frames instead of 10
+                const t = Math.min(1, frame / (8 / speedFactor)); // Schneller: 8 Frames statt 10
 
                 if (t < 1) {
                     // Fade in
@@ -142,34 +144,34 @@ function triggerInteraction(type) {
                     const b = clamp(lerp(0, 127, t));
                     setRGB(r, g, b);
                 } else {
-                    // Gentle pulse while held
-                    const pulse = Math.sin((frame - (8 / speedFactor)) * 0.15 * speedFactor) * 15 + 112; // Pulse between 97-127
+                    // Sanfter Pulse während gehalten
+                    const pulse = Math.sin((frame - (8 / speedFactor)) * 0.15 * speedFactor) * 15 + 112; // Pulse zwischen 97-127
                     setRGB(90, 0, clamp(pulse));
                 }
-            }, 20 / speedFactor); // Apply global speed
+            }, 20 / speedFactor);
         }
         else if (type === 'release') {
-            // Fast Fade Out
+            // Schneller Fade Out
             interactionInterval = setInterval(() => {
                 frame++;
-                const t = Math.min(1, frame / (15 / speedFactor)); // Slightly faster
+                const t = Math.min(1, frame / (15 / speedFactor));
                 const r = clamp(lerp(90, 0, t));
                 const g = 0;
                 const b = clamp(lerp(127, 0, t));
                 setRGB(r, g, b);
                 if (t >= 1) clearInterval(interactionInterval);
-            }, 18 / speedFactor); // Apply global speed
+            }, 18 / speedFactor);
         }
         else if (type === 'click') {
-            // White Flash -> Fade Green
+            // Weißer Flash -> Fade zu Grün
             interactionInterval = setInterval(() => {
                 frame++;
                 if (frame < 5) {
-                    setRGB(127, 127, 127); // Flash (bright white in MIDI range)
+                    setRGB(127, 127, 127); // Flash (helles Weiß im MIDI-Bereich)
                 } else {
                     const t = Math.min(1, (frame - 5) / 20);
                     const r = clamp(lerp(127, 0, t));
-                    const g = 127; // Stay green
+                    const g = 127; // Bleibt grün
                     const b = clamp(lerp(127, 0, t));
                     setRGB(r, g, b);
                     if (t >= 1) {
@@ -181,25 +183,25 @@ function triggerInteraction(type) {
         }
 }
 
-// --- BUILT-IN INITIALIZATION ANIMATION ---
+// Initialisierungs-Animation beim Start
 let initAnimInterval = null;
 
 function runInitialization() {
         if (initAnimInterval) clearInterval(initAnimInterval);
 
-        // Notify UI
+        // UI benachrichtigen
         if (mainWindow && !mainWindow.isDestroyed()) {
             mainWindow.webContents.send('status', 'initializing');
         }
 
         let tick = 0;
-        const TOTAL_DURATION = 300; // 7.5 seconds (300 * 25ms) for gentler feel
+        const TOTAL_DURATION = 300; // 7.5 Sekunden (300 * 25ms) für sanfteren Effekt
         const INTERVAL = 25;
 
-        // Soft pastel color flow (less saturated, warmer)
+        // Sanfter Pastell-Farbverlauf (weniger gesättigt, wärmer)
         const rainbow = (offset) => {
             const progress = tick / TOTAL_DURATION;
-            const hue = (progress * 2 + offset) % 1; // Slower color shift (2 loops instead of 3)
+            const hue = (progress * 2 + offset) % 1; // Langsamere Farbverschiebung (2 Loops statt 3)
             const h = hue * 6;
             const x = 1 - Math.abs((h % 2) - 1);
             let r, g, b;
@@ -210,26 +212,26 @@ function runInitialization() {
             else if (h < 5) { r = x; g = 0; b = 1; }
             else { r = 1; g = 0; b = x; }
 
-            // Softer saturation
-            const softR = Math.floor(r * 100 + 27); // Add base warmth
+            // Sanftere Sättigung
+            const softR = Math.floor(r * 100 + 27); // Basis-Wärme hinzufügen
             const softG = Math.floor(g * 100 + 27);
             const softB = Math.floor(b * 100 + 27);
 
             return [softR, softG, softB];
         };
 
-        // Smooth cubic ease-in-out brightness curve
+        // Smooth cubic ease-in-out Helligkeitskurve
         const easeInOutCubic = (t) => {
             return t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
         };
 
         const zoneBrightness = (zoneIdx) => {
             const progress = tick / TOTAL_DURATION;
-            const stagger = zoneIdx * 0.15; // Less stagger for cohesive flow
-            const localProgress = (progress - stagger) / 0.7; // Spread over 70% of timeline
+            const stagger = zoneIdx * 0.15; // Weniger Stagger für zusammenhängenden Flow
+            const localProgress = (progress - stagger) / 0.7; // Über 70% der Timeline verteilen
             if (localProgress < 0 || localProgress > 1) return 0;
 
-            // Cubic easing for VERY smooth fade
+            // Cubic easing für sehr smooth Fade
             return easeInOutCubic(Math.sin(localProgress * Math.PI));
         };
 
@@ -238,7 +240,7 @@ function runInitialization() {
 
             if (tick <= TOTAL_DURATION) {
                 ZONES.forEach((z, idx) => {
-                    const brightness = zoneBrightness(idx) * 0.6; // Max 60% brightness (softer)
+                    const brightness = zoneBrightness(idx) * 0.6; // Max 60% Helligkeit (sanfter)
                     const [r, g, b] = rainbow(idx * 0.1);
                     setZone(idx,
                         Math.floor(r * brightness),
@@ -247,18 +249,18 @@ function runInitialization() {
                     );
                 });
             } else if (tick <= TOTAL_DURATION + 80) {
-                // Gentle fade out to warm off
+                // Sanfter Fade Out zu warmem Aus
                 const fadeProgress = (tick - TOTAL_DURATION) / 80;
                 const fadeOut = 1 - easeInOutCubic(fadeProgress);
                 ZONES.forEach((z, idx) => {
                     setZone(idx,
                         Math.floor(60 * fadeOut),
                         Math.floor(40 * fadeOut),
-                        Math.floor(80 * fadeOut) // Soft purple fade
+                        Math.floor(80 * fadeOut) // Sanfter Lila-Fade
                     );
                 });
             } else {
-                // Done
+                // Fertig
                 clearInterval(initAnimInterval);
                 initAnimInterval = null;
                 setRGB(0, 0, 0);
@@ -269,27 +271,28 @@ function runInitialization() {
         }, INTERVAL);
 }
 
-// --- ANIMATIONS PLUGIN SYSTEM ---
+// Plugin-System für Animationen
 const animPlugins = new Map();
 const PLUGINS_DIR = path.join(__dirname, '../plugins/animations');
 
 function loadAnimations() {
         if (!fs.existsSync(PLUGINS_DIR)) {
-            console.log("Plugins directory not found, creating...");
+            console.log("Plugins-Verzeichnis nicht gefunden, erstelle es...");
             fs.mkdirSync(PLUGINS_DIR, { recursive: true });
             return;
         }
 
         const files = fs.readdirSync(PLUGINS_DIR).filter(f => f.endsWith('.js'));
         files.forEach(file => {
-            // Skip welcome.js - it's now built-in
+            // welcome.js überspringen - ist jetzt built-in
             if (file === 'welcome.js') {
-                console.log(`Skipping built-in animation: ${file}`);
+                console.log(`Überspringe built-in Animation: ${file}`);
                 return;
             }
 
             const fullPath = path.join(PLUGINS_DIR, file);
             try {
+                // Cache löschen für Hot-Reload
                 delete require.cache[require.resolve(fullPath)];
                 const anim = require(fullPath);
                 const id = file.replace('.js', '');
@@ -299,9 +302,9 @@ function loadAnimations() {
                     interval: anim.interval || 50,
                     tick: anim.tick
                 });
-                console.log(`Loaded animation: ${anim.name || id} (${id})`);
+                console.log(`Animation geladen: ${anim.name || id} (${id})`);
             } catch (e) {
-                console.error(`Failed to load animation ${file}:`, e);
+                console.error(`Fehler beim Laden der Animation ${file}:`, e);
             }
         });
 }
@@ -319,43 +322,41 @@ function startAnimation(type) {
         stopAnimation();
         config.ledEnabled = false;
 
-        // Reload plugins on every start? Or just once? 
-        // User said "without recompile", implying hot load or at least app restart.
-        // Let's reload on every start for maximum "dev" feel, it's cheap.
+        // Plugins bei jedem Start neu laden für Hot-Reload
+        // TODO: Vielleicht optional machen? Performance-Check?
         loadAnimations();
 
         const plugin = animPlugins.get(type);
 
         if (plugin) {
             let tick = 0;
-            // Apply Global Speed
+            // Globale Geschwindigkeit anwenden
             const baseInterval = plugin.interval || 50;
             const speedFactor = (config.globalSpeed || 100) / 100; // 100->1.0, 200->2.0
             const realInterval = Math.max(10, baseInterval / speedFactor);
 
-            console.log(`Starting ${type} @ ${realInterval.toFixed(1)}ms (Speed: ${config.globalSpeed}%)`);
+            console.log(`Starte ${type} @ ${realInterval.toFixed(1)}ms (Speed: ${config.globalSpeed}%)`);
             activeAnimName = type;
 
             currentAnimInterval = setInterval(() => {
                 try {
-                    // Pass a simpler setZone wrapper if needed, or raw
-                    // We pass setZone directly. Plugins must match signature.
+                    // Plugin-Signatur: tick(ZONES, setZone, frame)
                     plugin.tick(ZONES, setZone, tick);
                     tick++;
                 } catch (e) {
-                    console.error(`Animation ${type} error:`, e);
+                    console.error(`Fehler in Animation ${type}:`, e);
                     stopAnimation();
                 }
             }, realInterval);
         } else {
-        console.warn(`Animation ${type} not found!`);
+        console.warn(`Animation ${type} nicht gefunden!`);
     }
 }
 
-// --- MIDI LOGIC ---
+// MIDI-Logik
 function startMidi() {
         JZZ().or(function () {
-            console.log('Cannot start MIDI engine!');
+            console.log('MIDI-Engine kann nicht gestartet werden!');
         }).and(function () {
             const info = this.info();
             const inName = info.inputs.find(x => x.name.toLowerCase().includes(DEVICE_NAME.toLowerCase()))?.name;
@@ -363,14 +364,14 @@ function startMidi() {
 
             if (outName) {
                 midiOut = this.openMidiOut(outName);
-                console.log("MIDI Output opened.");
+                console.log("MIDI Output geöffnet.");
             }
 
             if (inName) {
                 this.openMidiIn(inName).connect(handleMidiMessage);
             }
 
-            // Notify UI
+            // UI benachrichtigen
             if (mainWindow) {
                 mainWindow.webContents.send('status', {
                     connected: !!(inName && outName),
@@ -380,24 +381,24 @@ function startMidi() {
         });
 }
 
-// LOW LATENCY Media Handler (Persistent PowerShell)
+// Media-Key Handler mit niedriger Latenz (Persistenter PowerShell-Prozess)
 const { spawn } = require('child_process');
 let psProc = null;
 
 function initMediaKeys() {
         if (psProc) return;
 
-        // Start persistent PowerShell process
+        // Persistenten PowerShell-Prozess starten
         psProc = spawn('powershell', ['-NoProfile', '-Command', '-'], {
-            stdio: ['pipe', 'ignore', 'ignore'], // Only need stdin
+            stdio: ['pipe', 'ignore', 'ignore'], // Nur stdin brauchen wir
             windowsHide: true
         });
 
-        // Handle unexpected exit
+        // Bei unerwartetem Exit neu starten
         psProc.on('exit', () => { psProc = null; });
         psProc.on('error', () => { psProc = null; });
 
-        // Inject C# P/Invoke definition ONCE
+        // C# P/Invoke Definition einmalig injizieren
         const def = `Add-Type -TypeDefinition 'using System.Runtime.InteropServices; public class K { [DllImport("user32.dll")] public static extern void keybd_event(byte b, byte s, uint f, int e); }'`;
         psProc.stdin.write(def + "\n");
     }
@@ -405,7 +406,7 @@ function initMediaKeys() {
     function sendMediaKey(vkCode) {
         if (!psProc) initMediaKeys();
 
-        // Send command directly to the running process
+        // Kommando direkt an laufenden Prozess senden
         // 0xB0=Next(176), 0xB1=Prev(177), 0xB3=Play(179)
         // keybd_event(vk, 0, 0, 0) -> Press
         // keybd_event(vk, 0, 2, 0) -> Release
@@ -413,14 +414,14 @@ function initMediaKeys() {
         try {
             psProc.stdin.write(cmd);
         } catch (e) {
-            // If pipe closed, restart
+            // Wenn Pipe geschlossen, neu starten
             psProc = null;
             initMediaKeys();
         }
 }
 
 function handleMidiMessage(msg) {
-        // Use setImmediate to decouple from native MIDI callback thread
+        // setImmediate nutzen, um vom nativen MIDI-Callback-Thread zu entkoppeln
         setImmediate(() => {
             const status = msg[0] & 0xF0;
             const ch = msg[0] & 0x0F;
@@ -429,12 +430,12 @@ function handleMidiMessage(msg) {
 
             if (ch !== CH_INPUT || status !== 0xB0) return;
 
-            // Send RAW to UI for visualization
+            // RAW-Daten an UI senden für Visualisierung
             if (mainWindow && !mainWindow.isDestroyed()) {
                 mainWindow.webContents.send('midi-event', { cc: d1, val: d2 });
             }
 
-            // --- LOGIC ---
+            // --- LOGIK ---
 
             // KNOB (80)
             if (d1 === 80) {
@@ -442,19 +443,20 @@ function handleMidiMessage(msg) {
                 const delta = d2 - lastKnobVal;
                 if (delta !== 0) {
                     let dir = delta > 0 ? 1 : -1;
+                    // Wrap-around behandeln
                     if (delta < -64) dir = 1;
                     else if (delta > 64) dir = -1;
 
-                    // Interactive Animation (Swapped for correct direction)
+                    // Interaktive Animation (Richtung getauscht für korrekte Visualisierung)
                     if (config.ledEnabled) {
-                        if (dir > 0) triggerInteraction('left');  // Right turn -> visual Right-to-Left
-                        else triggerInteraction('right'); // Left turn -> visual Left-to-Right
+                        if (dir > 0) triggerInteraction('left');  // Rechts drehen -> visuell Rechts-nach-Links
+                        else triggerInteraction('right'); // Links drehen -> visuell Links-nach-Rechts
                     }
 
                     // Media Control
                     if (config.mediaEnabled) {
-                        if (dir > 0) sendMediaKey(0xB0); // Right = Next
-                        else sendMediaKey(0xB1); // Left = Previous
+                        if (dir > 0) sendMediaKey(0xB0); // Rechts = Next
+                        else sendMediaKey(0xB1); // Links = Previous
                     }
                 }
                 lastKnobVal = d2;
@@ -463,7 +465,7 @@ function handleMidiMessage(msg) {
             else if (d1 === 81) {
                 const touched = (d2 < 64);
 
-                // Only trigger animation on state CHANGE to prevent idle flicker
+                // Nur bei State-ÄNDERUNG Animation triggern, um Flickern zu vermeiden
                 if (touched !== lastTouchState) {
                     lastTouchState = touched;
                     isTouched = touched;
@@ -482,10 +484,10 @@ function handleMidiMessage(msg) {
                     if (config.ledEnabled) triggerInteraction('click');
                 }
             }
-        }); // End setImmediate
+        }); // Ende setImmediate
 }
 
-// --- ELECTRON APP ---
+// Electron App Setup
 function createWindow() {
         mainWindow = new BrowserWindow({
             width: 700,
@@ -507,7 +509,7 @@ function createWindow() {
             mainWindow.webContents.send('config-updated', config);
             mainWindow.webContents.send('animations-list', Array.from(animPlugins.values()).map(p => ({ id: p.id, name: p.name })));
 
-            // Start initialization AFTER window is ready
+            // Initialisierung starten NACH dem Window ready ist
             if (midiOut) {
                 runInitialization();
             }
@@ -516,9 +518,9 @@ function createWindow() {
 
 app.whenReady().then(() => {
     createWindow();
-    initMediaKeys(); // Pre-load PowerShell
+    initMediaKeys(); // PowerShell vorladen
 
-    // Set App User Model ID for Windows
+    // App User Model ID für Windows setzen
     app.setAppUserModelId("com.openbuzzer.app");
     startMidi();
 });
@@ -558,17 +560,17 @@ app.on('window-all-closed', () => {
     }
 });
 
-// --- IPC ---
+// IPC Handler für Renderer-Kommunikation
 ipcMain.on('set-config', (event, newConfig) => {
     config = { ...config, ...newConfig };
-    saveConfig(); // Persist changes
-    console.log("Config updated:", config);
+    saveConfig(); // Änderungen persistieren
+    console.log("Config aktualisiert:", config);
 });
 
 ipcMain.on('manual-color', (event, rgb) => {
-    stopAnimation(); // Stop any active animation
-    // Override LED temporarily
-    config.ledEnabled = false; // Disable auto-react
+    stopAnimation(); // Aktive Animation stoppen
+    // LED temporär überschreiben
+    config.ledEnabled = false; // Auto-React deaktivieren
     setRGB(rgb.r, rgb.g, rgb.b);
 });
 
@@ -580,7 +582,7 @@ ipcMain.on('enable-auto-led', () => {
 ipcMain.on('start-anim', (event, type) => startAnimation(type));
 
 ipcMain.on('get-animations', (event) => {
-    // If empty (renderer loaded before main init), try loading
+    // Falls leer (Renderer vor Main init geladen), versuchen zu laden
     if (animPlugins.size === 0) loadAnimations();
 
     const list = [];
@@ -590,7 +592,7 @@ ipcMain.on('get-animations', (event) => {
     event.reply('animations-list', list);
 });
 
-// --- AUTOSTART ---
+// Autostart
 ipcMain.on('get-autostart-config', (event) => {
     const settings = app.getLoginItemSettings();
     event.reply('autostart-config', settings.openAtLogin);
@@ -599,20 +601,20 @@ ipcMain.on('get-autostart-config', (event) => {
 ipcMain.on('set-autostart-config', (event, enable) => {
     app.setLoginItemSettings({
         openAtLogin: enable,
-        path: app.getPath('exe') // Optional, safe to include
+        path: app.getPath('exe') // Optional, aber sicher
     });
 });
 
 ipcMain.on('set-brightness', (event, val) => {
     config.brightness = val;
     saveConfig();
-    // If static color active, re-apply logic could go here if we tracked lastStaticRGB
+    // TODO: Falls statische Farbe aktiv ist, könnte man hier neu anwenden
 });
 
 ipcMain.on('set-speed', (event, val) => {
     config.globalSpeed = val;
     saveConfig();
-    // Restart active animation if running
+    // Aktive Animation neu starten, falls läuft
     if (activeAnimName && activeAnimName !== 'none') {
         startAnimation(activeAnimName);
     }

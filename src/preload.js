@@ -1,15 +1,16 @@
 const { contextBridge, ipcRenderer } = require('electron');
 
+// API für Renderer-Prozess (sicherer IPC-Bridge)
 contextBridge.exposeInMainWorld('api', {
-    // Status messages
+    // Status-Nachrichten
     onStatus: (callback) => ipcRenderer.on('status', (event, msg) => callback(msg)),
-    // Scan Status
+    // Scan-Status (falls später gebraucht)
     onScanStatus: (callback) => ipcRenderer.on('scan-status', (event, status) => callback(status)),
-    // Config
+    // Config-Updates
     onConfigUpdated: (callback) => ipcRenderer.on('config-updated', (event, config) => callback(config)),
     onMidi: (callback) => ipcRenderer.on('midi-event', (e, v) => callback(v)),
     setConfig: (cfg) => ipcRenderer.send('set-config', cfg),
-    // Live Control
+    // Live-Control
     setManualColor: (rgb) => ipcRenderer.send('manual-color', rgb),
     setBrightness: (val) => ipcRenderer.send('set-brightness', val),
     setSpeed: (val) => ipcRenderer.send('set-speed', val),

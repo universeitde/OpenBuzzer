@@ -70,7 +70,7 @@ TimeBuzzer is a physical device that combines time management with visual feedba
 
 1. **Clone the repository**
    ```bash
-   git clone https://github.com/yourusername/OpenBuzzer.git
+   git clone https://github.com/universeitde/OpenBuzzer.git
    cd OpenBuzzer
    ```
 
@@ -89,7 +89,7 @@ TimeBuzzer is a physical device that combines time management with visual feedba
    npm start
    ```
 
-## 📱 Usage
+## Usage
 
 ### First Launch
 
@@ -222,13 +222,32 @@ Contributions are welcome! This is an open-source project, and we appreciate any
 
 ## License
 
-This project is licensed under the **ISC License**.
+This project is licensed under the **ISC License**. See the [LICENSE](LICENSE) file for details.
+
+### Third-Party Dependencies
+
+This project uses the following open-source dependencies (each with their own licenses):
+
+- **Electron** - MIT License
+- **JZZ** - MIT License
+- **@fluentui/web-components** - MIT License
+- **express** - MIT License
+- **serialport** - MIT License
+- **node-hid** - MIT/X11 License
+- **robotjs** - MIT License
+- **usb** - MIT License
+- **ws** - MIT License
+- **open** - MIT License
+- **web-midi-api** - MIT License
+
+All dependencies are listed in `package.json`. For detailed license information, check the `node_modules` directory or use `npm list --depth=0`.
 
 ## Links
 
 - **Website**: [timebuzzer.com](https://timebuzzer.com/)
-- **Issues**: [GitHub Issues](https://github.com/yourusername/OpenBuzzer/issues)
-- **Discussions**: [GitHub Discussions](https://github.com/yourusername/OpenBuzzer/discussions)
+- **Repository**: [GitHub](https://github.com/universeitde/OpenBuzzer)
+- **Issues**: [GitHub Issues](https://github.com/universeitde/OpenBuzzer/issues)
+- **Discussions**: [GitHub Discussions](https://github.com/universeitde/OpenBuzzer/discussions)
 
 ## Acknowledgments
 

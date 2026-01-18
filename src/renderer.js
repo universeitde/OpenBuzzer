@@ -5,12 +5,12 @@ let lastKnobVal = -1;
 let actionTimeout = null;
 let isClicking = false;
 
-// Helper: Show transient action
+// Helper: Zeige temporäre Aktion an
 function showAction(text, color = "#fff") {
     actionDisplay.innerText = text;
     actionDisplay.style.color = color;
 
-    // Reset to "Ready" after inactivity
+    // Nach Inaktivität zurück zu "Ready"
     if (actionTimeout) clearTimeout(actionTimeout);
     actionTimeout = setTimeout(() => {
         actionDisplay.innerText = "Ready";
@@ -18,7 +18,7 @@ function showAction(text, color = "#fff") {
     }, 1000);
 }
 
-// Listen for Status
+// Status-Updates empfangen
 window.api.onStatus((status) => {
     if (status.connected) {
         connStatus.innerText = "● Connected to TimeBuzzer";
@@ -30,10 +30,10 @@ window.api.onStatus((status) => {
     }
 });
 
-// --- STATUS LOGIC (Hidden) ---
+// Status-Logik (im Hintergrund)
 let isInitializing = false;
 
-// Get control switches
+// Control Switches holen
 const getSwitches = () => [
     document.getElementById('chkAutostart'),
     document.getElementById('chkLed'),
@@ -41,7 +41,7 @@ const getSwitches = () => [
 ];
 
 window.api.onStatus((msg) => {
-    // Status Logic (Background only)
+    // Status-Logik (nur im Hintergrund)
     if (msg === 'initializing') {
         isInitializing = true;
         getSwitches().forEach(sw => { if (sw) sw.disabled = true; });
@@ -52,15 +52,15 @@ window.api.onStatus((msg) => {
     }
 });
 
-// Listen for MIDI Events (Logic + Text Update)
+// MIDI-Events empfangen (Logik + Text-Update)
 window.api.onMidi((msg) => {
     // CC 80 = Knob
     if (msg.cc === 80) {
         if (lastKnobVal !== -1) {
             let delta = msg.val - lastKnobVal;
-            // Handle wrap-around logic (127->0 or 0->127)
-            if (delta < -64) delta += 128; // Wrapped right (0 -> 127 is huge negative)
-            else if (delta > 64) delta -= 128; // Wrapped left (127 -> 0 is huge positive)
+            // Wrap-around behandeln (127->0 oder 0->127)
+            if (delta < -64) delta += 128; // Wrapped right (0 -> 127 ist riesiger negativer Wert)
+            else if (delta > 64) delta -= 128; // Wrapped left (127 -> 0 ist riesiger positiver Wert)
 
             if (delta > 0) showAction("Turning Right ⟳", "#a36be8");
             else if (delta < 0) showAction("Turning Left ⟲", "#a36be8");
@@ -69,7 +69,7 @@ window.api.onMidi((msg) => {
     }
     // CC 81 = Touch (Idle=127, Touch=0)
     else if (msg.cc === 81) {
-        if (isClicking) return; // IGNORE TOUCH IF CLICKING
+        if (isClicking) return; // Touch ignorieren wenn gerade geklickt wird
 
         const isTouched = (msg.val < 64);
         if (isTouched) showAction("Touched ⭘", "#0078d4");
@@ -86,25 +86,25 @@ window.api.onMidi((msg) => {
     }
 });
 
-// Autostart Logic
+// Autostart-Logik
 window.api.onAutostart((enabled) => {
     document.getElementById('chkAutostart').checked = enabled;
 });
 
-// Animation List Logic
+// Animation-Liste Logik
 window.api.onAnimationsList((list) => {
     const grid = document.getElementById('animGrid');
-    grid.innerHTML = ''; // Clear header
+    grid.innerHTML = ''; // Header löschen
     list.forEach(anim => {
         const btn = document.createElement('fluent-button');
         btn.innerText = anim.name;
         btn.onclick = () => playAnim(anim.id);
-        // Style check: we already have CSS for .anim-grid fluent-button
+        // CSS für .anim-grid fluent-button ist bereits vorhanden
         grid.appendChild(btn);
     });
 });
 
-// Init check
+// Beim Start abfragen
 window.api.getAutostart();
 window.api.getAnimations();
 
@@ -118,7 +118,7 @@ window.api.onConfigUpdated((config) => {
     if (config.mediaEnabled !== undefined) document.getElementById('chkMedia').checked = config.mediaEnabled;
 });
 
-// Settings Logic
+// Settings-Logik
 function updateConfig() {
     const config = {
         ledEnabled: document.getElementById('chkLed').checked,
@@ -127,28 +127,28 @@ function updateConfig() {
     window.api.setConfig(config);
 }
 
-// Animation
+// Animation starten
 function playAnim(type) {
-    // document.getElementById('chkLed').checked = false; // Visually uncheck
+    // TODO: Visuell LED-Checkbox deaktivieren?
     window.api.startAnim(type);
 }
 
-// Manual Color (Presets)
+// Manuelle Farbe (Presets)
 function updateColor(hex) {
-    // Convert Hex to RGB
+    // Hex zu RGB konvertieren
     const r = parseInt(hex.substr(1, 2), 16);
     const g = parseInt(hex.substr(3, 2), 16);
     const b = parseInt(hex.substr(5, 2), 16);
     sendColor(r, g, b);
 }
 
-// Manual Color (Hue Slider)
+// Manuelle Farbe (Hue Slider)
 function updateHue(hue) {
     const h = parseInt(hue) / 360;
     const s = 1.0;
     const l = 0.5;
 
-    // HSL to RGB
+    // HSL zu RGB
     let r, g, b;
     if (s === 0) {
         r = g = b = l;
@@ -170,14 +170,12 @@ function updateHue(hue) {
 
     sendColor(Math.round(r * 255), Math.round(g * 255), Math.round(b * 255));
 
-    // Update preview thumb color?
-    // Actually the thumb is white, which is fine.
-
-    // Update presets selection state? (Optional)
+    // Preview-Thumb-Farbe aktualisieren? Naja, ist weiß, passt schon.
+    // Preset-Selection-State aktualisieren? (Optional)
 }
 
 function sendColor(r, g, b) {
-    // Scale 0-255 to 0-127 for MIDI
+    // 0-255 auf 0-127 für MIDI skalieren
     const mR = Math.floor(r / 2);
     const mG = Math.floor(g / 2);
     const mB = Math.floor(b / 2);

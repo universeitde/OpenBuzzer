@@ -1,45 +1,94 @@
-body {
-    margin: 0;
+/* ==========================================================================
+   OpenBuzzer Stylesheet
+   ========================================================================== */
+
+/* ==========================================================================
+   1. CSS Variables & Custom Properties
+   ========================================================================== */
+
+:root {
     --accent: #a36be8;
     --bg-translucent: rgba(32, 32, 32, 0.85);
-    /* Acrylic-like base */
+    --bg-dark: #1a1a1a;
+    --text-primary: rgba(255, 255, 255, 0.95);
+    --text-secondary: rgba(255, 255, 255, 0.8);
+    --text-muted: rgba(255, 255, 255, 0.5);
+    --border-subtle: rgba(255, 255, 255, 0.05);
+    --border-visible: rgba(255, 255, 255, 0.1);
+    --border-hover: rgba(255, 255, 255, 0.2);
+    --surface: rgba(255, 255, 255, 0.05);
+    --surface-hover: rgba(255, 255, 255, 0.08);
+}
+
+/* ==========================================================================
+   2. Base Styles & Reset
+   ========================================================================== */
+
+body {
+    margin: 0;
     padding: 0;
-    background: rgba(0, 0, 0, 0);
-    /* Transparent for Electron */
-    color: #fff;
-    font-family: 'Segoe UI', sans-serif;
+    background: rgba(0, 0, 0, 0); /* Transparent für Electron */
+    color: var(--text-primary);
+    font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, 'Roboto', sans-serif;
     overflow: hidden;
     height: 100vh;
     display: flex;
     flex-direction: column;
 }
 
-/* Hide Scrollbar */
+/* Scrollbar verstecken - sieht sauberer aus */
 ::-webkit-scrollbar {
     display: none;
 }
 
-/* Fluent Provider Full Height */
+/* ==========================================================================
+   3. Layout Components
+   ========================================================================== */
+
+/* Fluent Design System Provider */
 fluent-design-system-provider {
     height: 100%;
     display: flex;
     flex-direction: column;
-    background-color: #1a1a1a;
-    /* Solid Opaque Dark */
+    background-color: var(--bg-dark);
     border-radius: 8px;
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    border: 1px solid var(--border-subtle);
 }
 
-/* Custom Title Bar */
+/* Content Area - Hauptcontainer */
+.content {
+    flex: 1;
+    padding: 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+    overflow-y: auto;
+    background: var(--bg-dark);
+}
+
+/* Section Container - für konsistente Abstände */
+.section {
+    width: 100%;
+    max-width: 650px;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+/* ==========================================================================
+   4. Titlebar (Custom Window Controls)
+   ========================================================================== */
+
 .titlebar {
     height: 32px;
     display: flex;
     align-items: center;
     justify-content: space-between;
     padding-left: 12px;
-    background: #1a1a1a;
-    -webkit-app-region: drag;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    background: var(--bg-dark);
+    -webkit-app-region: drag; /* Electron: Fenster ziehen */
+    border-bottom: 1px solid var(--border-subtle);
 }
 
 .title {
@@ -50,7 +99,7 @@ fluent-design-system-provider {
 }
 
 .win-controls {
-    -webkit-app-region: no-drag;
+    -webkit-app-region: no-drag; /* Buttons sollen nicht ziehen */
     display: flex;
     height: 100%;
 }
@@ -72,62 +121,50 @@ fluent-design-system-provider {
 }
 
 .win-btn-native.close:hover {
-    background: #e81123;
+    background: #e81123; /* Windows-typisches Rot für Close */
     color: white;
 }
 
-/* Content Area */
-.content {
-    flex: 1;
-    padding: 24px;
-    display: flex;
-    flex-direction: column;
-    gap: 24px;
-    overflow-y: auto;
-    background: #1a1a1a;
-}
-
-/* Form Layouts */
-.section {
-    width: 100%;
-    max-width: 650px;
-    margin: 0 auto;
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-}
-
-.section .label {
-    color: rgba(255, 255, 255, 0.95);
-    font-weight: 600;
-}
+/* ==========================================================================
+   5. Typography & Labels
+   ========================================================================== */
 
 .label {
     font-size: 12px;
     font-weight: 600;
-    color: rgba(255, 255, 255, 0.9);
+    color: var(--text-primary);
     margin-bottom: 8px;
     text-transform: uppercase;
     letter-spacing: 0.5px;
 }
 
+.section .label {
+    color: var(--text-primary);
+    font-weight: 600;
+}
+
+/* ==========================================================================
+   6. Form Controls & Inputs
+   ========================================================================== */
+
+/* Row Controls - für Settings mit Label + Control */
 .row-controls {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    background: rgba(255, 255, 255, 0.05);
+    background: var(--surface);
     padding: 12px 16px;
     border-radius: 4px;
-    border: 1px solid rgba(255, 255, 255, 0.08);
+    border: 1px solid var(--border-visible);
 }
 
 .row-controls span {
     font-size: 14px;
-    color: rgba(255, 255, 255, 0.9);
+    color: var(--text-primary);
     font-weight: 400;
 }
 
-/* Fluent Overrides/Helpers */
+/* Fluent UI Component Overrides */
 fluent-button {
     width: 100%;
 }
@@ -142,22 +179,27 @@ fluent-card {
     width: 100%;
 }
 
-/* Fluent 2 Select Styling */
+/* ==========================================================================
+   7. Fluent Select (Dropdown) Styling
+   ========================================================================== */
+
+/* Base Select Styles */
 fluent-select {
-    --neutral-foreground-rest: rgba(255, 255, 255, 0.9);
+    --neutral-foreground-rest: var(--text-primary);
     --neutral-foreground-hover: rgba(255, 255, 255, 1);
-    --neutral-stroke-rest: rgba(255, 255, 255, 0.2);
+    --neutral-stroke-rest: var(--border-hover);
     --neutral-stroke-hover: rgba(255, 255, 255, 0.35);
-    --accent-fill-rest: #a36be8;
-    --accent-stroke-control-active: #a36be8;
+    --accent-fill-rest: var(--accent);
+    --accent-stroke-control-active: var(--accent);
     font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, 'Roboto', sans-serif;
 }
 
+/* Control (der sichtbare Teil) */
 fluent-select::part(control) {
-    background: rgba(255, 255, 255, 0.08);
-    border: 1px solid rgba(255, 255, 255, 0.2);
+    background: var(--surface-hover);
+    border: 1px solid var(--border-hover);
     border-radius: 6px;
-    color: rgba(255, 255, 255, 0.95);
+    color: var(--text-primary);
     font-size: 14px;
     font-weight: 400;
     padding: 8px 32px 8px 12px;
@@ -176,19 +218,19 @@ fluent-select:hover::part(control) {
 
 fluent-select::part(control):focus {
     outline: none;
-    border-color: #a36be8;
+    border-color: var(--accent);
     box-shadow: 0 0 0 2px rgba(163, 107, 232, 0.2);
 }
 
 fluent-select[open]::part(control) {
-    border-color: #a36be8;
+    border-color: var(--accent);
     box-shadow: 0 0 0 2px rgba(163, 107, 232, 0.2);
 }
 
 /* Dropdown List Container */
 fluent-select::part(listbox) {
     background: rgba(26, 26, 26, 0.98);
-    border: 1px solid rgba(255, 255, 255, 0.2);
+    border: 1px solid var(--border-hover);
     border-radius: 6px;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4), 0 0 1px rgba(0, 0, 0, 0.3);
     padding: 4px;
@@ -198,7 +240,7 @@ fluent-select::part(listbox) {
 
 /* Dropdown Options */
 fluent-option {
-    color: rgba(255, 255, 255, 0.9);
+    color: var(--text-primary);
     background: transparent;
     padding: 8px 12px;
     border-radius: 4px;
@@ -235,55 +277,12 @@ fluent-select[open]::part(indicator) {
     color: rgba(255, 255, 255, 0.9);
 }
 
-/* Hue Slider */
-.hue-slider {
-    -webkit-appearance: none;
-    width: 100%;
-    height: 12px;
-    border-radius: 6px;
-    background: linear-gradient(to right, #ff0000, #ffff00, #00ff00, #00ffff, #0000ff, #ff00ff, #ff0000);
-    outline: none;
-    cursor: pointer;
-    margin: 0;
-}
+/* ==========================================================================
+   8. Tabs Navigation
+   ========================================================================== */
 
-.hue-slider::-webkit-slider-thumb {
-    -webkit-appearance: none;
-    width: 20px;
-    height: 20px;
-    border-radius: 50%;
-    background: #ffffff;
-    border: 2px solid rgba(0, 0, 0, 0.1);
-    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.4);
-    transition: transform 0.1s;
-}
-
-.hue-slider::-webkit-slider-thumb:hover {
-    transform: scale(1.2);
-}
-
-/* Grid for Animation Buttons */
-.anim-grid {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 8px;
-}
-
-.anim-grid fluent-button::part(control) {
-    background: #2d2d2d;
-    border: 1px solid #444;
-    color: #ddd;
-}
-
-.anim-grid fluent-button:hover::part(control) {
-    background: #3d3d3d;
-    border-color: #a36be8;
-    color: white;
-}
-
-/* Tab Styling */
 fluent-tabs {
-    --accent-fill-rest: #a36be8;
+    --accent-fill-rest: var(--accent);
     --neutral-foreground-rest: #b0b0b0;
     --neutral-foreground-hover: #ffffff;
     --neutral-foreground-active: #ffffff;
@@ -292,7 +291,7 @@ fluent-tabs {
 }
 
 fluent-tabs::part(tabstrip) {
-    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    border-bottom: 1px solid var(--border-visible);
     margin-bottom: 16px;
     padding: 0 12px;
 }
@@ -314,6 +313,27 @@ fluent-tab[aria-selected="true"] {
     font-weight: 600;
 }
 
+/* Tab Panel Visibility */
+fluent-tab-panel {
+    width: 100%;
+    max-width: 100%;
+    padding: 0;
+}
+
+fluent-tab-panel[hidden] {
+    display: none !important;
+}
+
+fluent-tab-panel:not([hidden]) {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+/* ==========================================================================
+   9. Status & Dashboard Components
+   ========================================================================== */
+
 /* Status Card */
 .status-card {
     width: 100%;
@@ -322,7 +342,7 @@ fluent-tab[aria-selected="true"] {
     align-items: center;
     gap: 16px;
     background: rgba(255, 255, 255, 0.03);
-    border: 1px solid rgba(255, 255, 255, 0.05);
+    border: 1px solid var(--border-subtle);
     transition: all 0.3s ease;
 }
 
@@ -340,7 +360,7 @@ fluent-tab[aria-selected="true"] {
     font-size: 11px;
     text-transform: uppercase;
     letter-spacing: 1px;
-    color: rgba(255, 255, 255, 0.5);
+    color: var(--text-muted);
     margin-bottom: 2px;
 }
 
@@ -350,13 +370,13 @@ fluent-tab[aria-selected="true"] {
     color: #fff;
 }
 
-/* Status Variants */
+/* Status Variants - verschiedene Zustände */
 .status-card.connecting {
     border-left: 3px solid #ffaa00;
 }
 
 .status-card.initializing {
-    border-left: 3px solid #a36be8;
+    border-left: 3px solid var(--accent);
 }
 
 .status-card.ready {
@@ -365,14 +385,14 @@ fluent-tab[aria-selected="true"] {
 }
 
 .status-card.initializing .status-detail {
-    color: #a36be8;
+    color: var(--accent);
 }
 
 .status-card.ready .status-detail {
     color: #00cc66;
 }
 
-/* Dashbord Grid */
+/* Dashboard Grid - 2-spaltig für Stats */
 .dashboard-grid {
     display: grid;
     grid-template-columns: 1fr 1fr;
@@ -383,8 +403,8 @@ fluent-tab[aria-selected="true"] {
 
 .stat-card {
     padding: 20px 16px;
-    background: rgba(255, 255, 255, 0.05);
-    border: 1px solid rgba(255, 255, 255, 0.08);
+    background: var(--surface);
+    border: 1px solid var(--border-visible);
     border-radius: 4px;
     text-align: center;
 }
@@ -398,17 +418,20 @@ fluent-tab[aria-selected="true"] {
 
 .stat-label {
     font-size: 11px;
-    color: rgba(255, 255, 255, 0.8);
+    color: var(--text-secondary);
     text-transform: uppercase;
     letter-spacing: 1px;
     margin-top: 4px;
 }
 
-/* Action Cards */
+/* ==========================================================================
+   10. Action Cards & Controls
+   ========================================================================== */
+
 .action-card {
     padding: 8px 16px;
-    background: rgba(255, 255, 255, 0.05);
-    border: 1px solid rgba(255, 255, 255, 0.08);
+    background: var(--surface);
+    border: 1px solid var(--border-visible);
     border-radius: 4px;
 }
 
@@ -422,17 +445,42 @@ fluent-tab[aria-selected="true"] {
 .action-row span {
     font-size: 14px;
     font-weight: 400;
-    color: rgba(255, 255, 255, 0.9);
+    color: var(--text-primary);
     letter-spacing: 0.2px;
 }
 
 .separator {
     height: 1px;
-    background: rgba(255, 255, 255, 0.1);
+    background: var(--border-visible);
     margin: 8px 0;
 }
 
-/* Timer */
+/* ==========================================================================
+   11. Animation Grid
+   ========================================================================== */
+
+.anim-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+}
+
+.anim-grid fluent-button::part(control) {
+    background: #2d2d2d;
+    border: 1px solid #444;
+    color: #ddd;
+}
+
+.anim-grid fluent-button:hover::part(control) {
+    background: #3d3d3d;
+    border-color: var(--accent);
+    color: white;
+}
+
+/* ==========================================================================
+   12. Timer Component
+   ========================================================================== */
+
 .timer-container {
     display: flex;
     flex-direction: column;
@@ -446,7 +494,7 @@ fluent-tab[aria-selected="true"] {
     font-size: 80px;
     font-weight: 200;
     color: #fff;
-    font-feature-settings: "tnum";
+    font-feature-settings: "tnum"; /* Tabular numbers für bessere Lesbarkeit */
     line-height: 1;
 }
 
@@ -478,19 +526,39 @@ fluent-tab[aria-selected="true"] {
     background: rgba(255, 255, 255, 0.1);
 }
 
-/* Fix visibility logic */
-fluent-tab-panel {
+/* ==========================================================================
+   13. Color Picker (Hue Slider)
+   ========================================================================== */
+
+.hue-slider {
+    -webkit-appearance: none;
     width: 100%;
-    max-width: 100%;
-    padding: 0;
+    height: 12px;
+    border-radius: 6px;
+    /* Regenbogen-Gradient für Hue-Picker */
+    background: linear-gradient(to right, 
+        #ff0000, #ffff00, #00ff00, #00ffff, 
+        #0000ff, #ff00ff, #ff0000);
+    outline: none;
+    cursor: pointer;
+    margin: 0;
 }
 
-fluent-tab-panel[hidden] {
-    display: none !important;
+.hue-slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: #ffffff;
+    border: 2px solid rgba(0, 0, 0, 0.1);
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.4);
+    transition: transform 0.1s;
 }
 
-fluent-tab-panel:not([hidden]) {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
+.hue-slider::-webkit-slider-thumb:hover {
+    transform: scale(1.2);
 }
+
+/* ==========================================================================
+   End of Stylesheet
+   ========================================================================== */
