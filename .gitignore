@@ -70,5 +70,5 @@ coverage/
 # Yarn Integrity file
 .yarn-integrity
 
-# Internal Documentation (should not be committed)
+# Internal Documentation
 internal.md
