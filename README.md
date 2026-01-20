@@ -44,7 +44,7 @@ TimeBuzzer is a physical device that combines time management with visual feedba
 - **Media Key Integration**: Control your media playback directly from the application
 - **System-wide Media Control**: Play, pause, skip tracks using system media keys
 
-### ⏱Timer & Focus Mode
+### Timer & Focus Mode
 - **Pomodoro Timer**: Built-in focus timer with preset durations (5m, 15m, 25m)
 - **Visual Feedback**: LED animations synchronized with timer states
 
